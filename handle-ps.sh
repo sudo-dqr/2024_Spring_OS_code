@@ -40,7 +40,7 @@ elif [ ! -z "$CMD" ]; then
     awk -v input=$CMD '$5~input{print $0}' $FILE
 elif [ ! -z $PID ]; then
     # Your code here. (3/3)
-    awk '{print $0}' $FILE
+    awk -v input=$PID '$5~input{print $3}' $FILE
 else
     usage
     exit 1
