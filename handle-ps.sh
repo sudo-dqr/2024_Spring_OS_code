@@ -37,7 +37,7 @@ if $SORT; then
     sort -k4nr -k2n $FILE
 elif [ ! -z "$CMD" ]; then
     # Your code here. (2/3)
-    awk '$5~"$CMD"{print $0}' $FILE
+    awk -v input=$CMD '$5~input{print $0}' $FILE
 elif [ ! -z $PID ]; then
     # Your code here. (3/3)
     awk '{print $0}' $FILE
