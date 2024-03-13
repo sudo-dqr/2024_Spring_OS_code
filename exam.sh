@@ -37,5 +37,5 @@ elif [ $# -eq 1 ]
 then
 x=$1
 fi
-n=$(($x+$y))
-sed -n '$np' err.txt  >&2
+l=$(($x+$y))
+sed -n $l'p' err.txt >&2
