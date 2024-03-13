@@ -25,6 +25,8 @@ cd ..
 mv err.txt ../
 cd ..
 chmod 655 err.txt 
+
+
 x=1
 y=1
 if [ $# -eq 2 ]
@@ -36,4 +38,4 @@ then
 x=$1
 fi
 n=$(($x+$y))
-sed -n "$np" err.txt >&2  
+sed -n '$np' err.txt  >&2
