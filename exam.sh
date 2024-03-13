@@ -24,11 +24,7 @@ cd ..
 ./hello 2> err.txt
 mv err.txt ../
 cd ..
-chmod "u=rw" err.txt
-chmod "g=r" err.txt
-chmod "o=xr" err.txt
-chmod "a=x" err.txt
-
+chmod 655 err.txt 
 x=1
 y=1
 if [ $# -eq 2 ]
