@@ -34,7 +34,7 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 		}
 		/* we found a '%' */
 		/* Exercise 1.4: Your code here. (4/8) */
-		fmt++:
+		fmt++;
 		/* check format flag 左对齐 右对齐 、填充字符*/
 		/* Exercise 1.4: Your code here. (5/8) */
 		if (*fmt == '-') {
@@ -90,10 +90,10 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 			 */
 			/* Exercise 1.4: Your code here. (8/8) */
 			if (num < 0) {
-				negflag = 1;
+				neg_flag = 1;
 				num = -num;
 			} else {
-				negflag = 0;
+				neg_flag = 0;
 			}
 			print_num(out, data, num, 10, neg_flag,width, ladjust, padc, 0);
 			break;
