@@ -19,25 +19,51 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 	for (;;) {
 		/* scan for the next '%' */
 		/* Exercise 1.4: Your code here. (1/8) */
-
-		/* flush the string found so far */
+		s = fmt;
+		while(*s != '%' && *s != '\0') {
+			s++;
+		}
+		/* flush the string found so far 输出%之前的字符串*/
 		/* Exercise 1.4: Your code here. (2/8) */
-
+		out(data,fmt,s-fmt);
+		fmt = s;
 		/* check "are we hitting the end?" */
 		/* Exercise 1.4: Your code here. (3/8) */
-
+		if (*fmt == '\0') {
+			break;
+		}
 		/* we found a '%' */
 		/* Exercise 1.4: Your code here. (4/8) */
-
-		/* check format flag */
+		fmt++:
+		/* check format flag 左对齐 右对齐 、填充字符*/
 		/* Exercise 1.4: Your code here. (5/8) */
-
-		/* get width */
+		if (*fmt == '-') {
+			ladjust = 1;
+			fmt++;
+		} else {
+			ladjust = 0;
+		}
+		if (*fmt == '0') {
+			padc = '0';
+			fmt++;
+		} else {
+			padc = ' ';
+		}
+		/* get width 输出宽度*/
 		/* Exercise 1.4: Your code here. (6/8) */
-
-		/* check for long */
+		width = 0;
+		while (*fmt >= '0' && *fmt <= '9') {
+			width = width * 10 + (*fmt - '0');
+			fmt++;
+		}
+		/* check for long 这里标记长整数只有l*/
 		/* Exercise 1.4: Your code here. (7/8) */
-
+		if (*fmt == 'l') {
+			long_flag = 1;
+			fmt++;
+		} else {
+			long_flag = 0;
+		}
 		neg_flag = 0;
 		switch (*fmt) {
 		case 'b':
@@ -63,7 +89,13 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 			 * others. (hint: 'neg_flag').
 			 */
 			/* Exercise 1.4: Your code here. (8/8) */
-
+			if (num < 0) {
+				negflag = 1;
+				num = -num;
+			} else {
+				negflag = 0;
+			}
+			print_num(out, data, num, 10, neg_flag,width, ladjust, padc, 0);
 			break;
 
 		case 'o':
