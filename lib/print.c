@@ -107,11 +107,12 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 				x = va_arg(ap, int);
 				y = va_arg(ap, int);
 			}
-			long z = (x + y) * (x - y);
-			z = (z < 0) ? -z : z;
+			int z = (x + y) * (x - y);
+			z = z < 0 ? -z : z;
 			print_char(out, data, '(', 0, 0);
 			if (x < 0) {
 				neg_flag = 1;
+				x = -x;
 			} else {
 				neg_flag = 0;
 			}
@@ -119,6 +120,7 @@ void vprintfmt(fmt_callback_t out, void *data, const char *fmt, va_list ap) {
 			print_char(out, data, ',', 0, 0);
 			if (y < 0) {
 				neg_flag = 1;
+				y = -y;
 			} else {
 				neg_flag = 0;
 			}
