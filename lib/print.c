@@ -346,7 +346,6 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 			do {
 				in(data, &ch, 1);
 			} while (ch == ' ' || ch == '\t' || ch == '\n');
-			in(data, &ch, 1);
 			*cp = ch;
 			break;
 		case 's' :
@@ -355,8 +354,8 @@ int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
 				in(data, &ch, 1);
 			} while (ch == ' ' || ch == '\t' || ch == '\n');
 			do {
-				in(data, &ch, 1);
 				*cp = ch;
+				in(data, &ch, 1);
 				cp++;
 			} while (ch != ' ' && ch != '\t' && ch != '\n');
 			*cp = '\0';
