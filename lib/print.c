@@ -277,3 +277,95 @@ void print_num(fmt_callback_t out, void *data, unsigned long u, int base, int ne
 
 	out(data, buf, length);
 }
+
+
+
+/*lab1-extra*/
+int vscanfmt(scan_callback_t in, void *data, const char *fmt, va_list ap) {
+	int *ip;
+	char *cp;
+	char ch;
+	int base, num, neg, ret = 0;
+
+	while(*fmt) {
+		if(*fmt == '%') {
+			ret++;
+			fmt++;
+			do {
+				in(data, &ch, 1);
+			} while (ch == ' ' || ch == '\t' || ch == '\n');		
+		switch(*fmt) {
+		case 'd' :
+			num = 0;
+			neg = 0;
+			ip = (int *)va_arg(ap, char *);
+			base = 10;
+			in(data, &ch, 1);
+			if (ch == '-'){
+				neg = 1;
+			}
+			do {
+				in(data, &ch, 1);
+			} while (ch == '0');
+			do {
+				in(data, &ch, 1);
+				num = num * base + (ch-'0');
+			} while (ch >= '0' && ch <= '9');
+			if (neg == 1) {
+				num = -num;
+			}
+			*ip = num;
+			break;
+		case 'x' :
+			num = 0;
+			neg = 0;
+			ip = (int *)va_arg(ap, char *);
+			base = 16;
+			in(data, &ch, 1);
+			if (ch == '-') {
+				neg = 1;
+			} 
+			do {
+				in(data, &ch, 1);
+			} while (ch == '0');
+			do {
+				in(data, &ch, 1);
+				if (ch >= '0' && ch <= '9') {
+					num = num * base + (ch - '0');
+				} else {
+					num = num * base + (ch - 'a' + 10);
+				}
+			} while (ch >= '0' && ch <= '9' || ch >= 'a' && ch <= 'f');
+			if (neg == 1) {
+				num = -num;
+			}
+			*ip = num;
+			break;
+		case 'c' :
+			cp = (char *)va_arg(ap, char*);
+			do {
+				in(data, &ch, 1);
+			} while (ch == ' ' || ch == '\t' || ch == '\n');
+			in(data, &ch, 1);
+			*cp = ch;
+			break;
+		case 's' :
+			cp = (char *)va_arg(ap, char*);
+			do {
+				in(data, &ch, 1);
+			} while (ch == ' ' || ch == '\t' || ch == '\n');
+			do {
+				in(data, &ch, 1);
+				*cp = ch;
+				cp++;
+			} while (ch != ' ' && ch != '\t' && ch != '\n');
+			*cp = '\0';
+			break;
+			}
+		fmt++;
+		}
+	}
+	return ret;
+}
+
+
