@@ -46,6 +46,11 @@
  * where HEADNAME is the name of the structure to be defined, and TYPE is the type of the
  * elements to be linked into the list.
  */
+
+/*
+*注：这里需要注意的是 C语言中如果要使用多行宏定义，则需要在行的末尾加\，末尾的\后不能再跟任何内容 
+*/
+
 #define LIST_HEAD(name, type)                                                                      \
 	struct name {                                                                              \
 		struct type *lh_first; /* first element */                                         \
@@ -131,6 +136,7 @@
 	do {                                                                                       \
 		(elm)->field.le_prev = (listelm)->field.le_prev;                                   \
 		LIST_NEXT((elm), field) = (listelm);                                               \
+		/*listelm的前一个节点的下一个节点指针指向elm 这里需要注意的是 le_prev是一个二级指针 一级解引用之后得到的是le_next指针*/\ 
 		*(listelm)->field.le_prev = (elm);                                                 \
 		(listelm)->field.le_prev = &LIST_NEXT((elm), field);                               \
 	} while (0)
