@@ -32,6 +32,8 @@
 
 /*
  * List declarations.
+ *说明：这其中的参数多半是指针
+ *head代表链表头指针 elm代表链表项指针 field代表LIST_ENTRY中定义的结构体，这个结构体被Page结构体用作指针域pp_link
  */
 
 /*
@@ -39,6 +41,7 @@
  * tains a single pointer to the first element on the list.  The elements are doubly
  * linked so that an arbitrary element can be removed without traversing the list.  New
  * elements can be added to the list after an existing element or at the head of the list.
+ * 主要意思：链表头是单向指针，指向链表中的第一个元素，链表中的元素是双向链表 
  * A LIST_HEAD structure is declared as follows:
  *
  *       LIST_HEAD(HEADNAME, TYPE) head;
@@ -48,7 +51,7 @@
  */
 
 /*
-*注：这里需要注意的是 C语言中如果要使用多行宏定义，则需要在行的末尾加\，末尾的\后不能再跟任何内容 
+*注：这里需要注意的是 C语言中如果要使用多行宏定义，则需要在行的末尾加\，末尾的\后不能再跟任何内容 \的实际作用是将这些行视作一行
 */
 
 #define LIST_HEAD(name, type)                                                                      \
@@ -70,6 +73,7 @@
  * The le_prev points at the pointer to the structure containing
  * this very LIST_ENTRY, so that if we want to remove this list entry,
  * we can do *le_prev = le_next to update the structure pointing at us.
+ * 这是对于链表项的定义 其中链表每一个节点为自定义结构体 结构体中包含了一个向前的二级指针和一个向后的指针
  */
 #define LIST_ENTRY(type)                                                                           \
 	struct {                                                                                   \
@@ -83,11 +87,13 @@
 
 /*
  * Detect the list named "head" is empty.
+ * 链表头是否为空 即链表是否为空 
  */
 #define LIST_EMPTY(head) ((head)->lh_first == NULL)
 
 /*
  * Return the first element in the list named "head".
+ * 链表头中唯一的一个指针指向链表中的第一个节点 
  */
 #define LIST_FIRST(head) ((head)->lh_first)
 
@@ -95,6 +101,8 @@
  * Iterate over the elements in the list named "head".
  * During the loop, assign the list elements to the variable "var"
  * and use the LIST_ENTRY structure member "field" as the link field.
+ * 注：这里使用LIST_ENTRY宏定义中定义的结构体作为链接域field ，我们的实验中，Page结构体中 可以划分为指针域和数据域 
+ * 指针域实际上又是一个结构体，其中包含着两个指针 field.le_next field.le_prev  page结构体中指针域名称为pp_link
  */
 #define LIST_FOREACH(var, head, field)                                                             \
 	for ((var) = LIST_FIRST((head)); (var); (var) = LIST_NEXT((var), field))

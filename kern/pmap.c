@@ -7,15 +7,15 @@
 #include<error.h>
 
 /* These variables are set by mips_detect_memory(ram_low_size); */
-static u_long memsize; /* Maximum physical address */
-u_long npage;	       /* Amount of memory(in pages) */
+static u_long memsize; /* Maximum physical address 总物理地址*/
+u_long npage;	       /* Amount of memory(in pages) 总物理页数 */
 
 Pde *cur_pgdir;
 
 struct Page *pages;
 static u_long freemem;
 
-struct Page_list page_free_list; /* Free list of physical pages */
+struct Page_list page_free_list; /* Free list of physical pages 注：这里的page_free_list实际上是一个链表头*/
 
 /* Overview:
  *   Use '_memsize' from bootloader to initialize 'memsize' and
@@ -100,8 +100,10 @@ void page_init(void) {
 	freemem = ROUND(freemem,PAGE_SIZE);
 	/* Step 3: Mark all memory below `freemem` as used (set `pp_ref` to 1) */
 	/* Exercise 2.3: Your code here. (3/4) */
+	/*需要注意的是freemem是一个虚拟地址 需要用PADDR得到对应的物理地址*/
 	u_long used_page_num = PPN(PADDR(freemem));
 	u_long i;
+	/*注：pages是Page结构体数组头指针 *(pages+i)与pages[i]等同于访问pages中第i个page*/
 	for (i = 0;i < used_page_num;i++) {
 		pages[i].pp_ref = 1;
 	}
@@ -109,6 +111,7 @@ void page_init(void) {
 	/* Exercise 2.3: Your code here. (4/4) */
 	for (i = used_page_num;i < npage;i++) {
 		pages[i].pp_ref = 0;
+		/*注：向空闲链表中插入项都是向链表最前面插入*/
 		LIST_INSERT_HEAD(&page_free_list,&pages[i],pp_link);
 	}
 }
@@ -131,6 +134,8 @@ int page_alloc(struct Page **new) {
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
 	if (LIST_EMPTY(&page_free_list)) {
+		/*注：E_NO_MEM是error.h中定义出的error code，为什么加负号呢？我们通过右键查看他的reference可以发现如下的语句*/
+		/*assert(page_alloc(&pp) == -E_NO_MEM);*/
 		return -E_NO_MEM;
 	}
 	pp = LIST_FIRST(&page_free_list);
@@ -154,6 +159,7 @@ void page_free(struct Page *pp) {
 	assert(pp->pp_ref == 0);
 	/* Just insert it into 'page_free_list'. */
 	/* Exercise 2.5: Your code here. */
+	/*注：向空闲链表中插入项都是向链表最前面插入*/
 	LIST_INSERT_HEAD(&page_free_list,pp,pp_link);
 }
 

@@ -17,9 +17,9 @@
 #define PTE_FLAGS(pte) (((u_long)(pte)) & 0xFFF)
 
 // Page number field of an address
-// 物理地址得到的实页号
+// 物理地址得到的实页号 physical page number
 #define PPN(pa) (((u_long)(pa)) >> PGSHIFT)
-// 虚拟地址得到的虚页号
+// 虚拟地址得到的虚页号 virtual page number 
 #define VPN(va) (((u_long)(va)) >> PGSHIFT)
 
 // Page Table/Directory Entry flags
@@ -153,12 +153,13 @@ extern u_long npage;
 typedef u_long Pde;
 typedef u_long Pte;
 
+//translates form kernel virtual address to physical address
 #define PADDR(kva)                                                                                 \
 	({                                                                                         \
 		u_long _a = (u_long)(kva);                                                         \
 		if (_a < ULIM)                                                                     \
 			panic("PADDR called with invalid kva %08lx", _a);                          \
-		_a - ULIM;                                                                         \
+		_a - ULIM;  /*高位清0*/                                                                       \
 	})
 
 // translates from physical address to kernel virtual address
@@ -168,7 +169,7 @@ typedef u_long Pte;
 		if (_ppn >= npage) {                                                               \
 			panic("KADDR called with invalid pa %08lx", (u_long)pa);                   \
 		}                                                                                  \
-		(pa) + ULIM;                                                                       \
+		(pa) + ULIM;  /*高位补1*/                                                                    \
 	})
 
 #define assert(x)                                                                                  \
