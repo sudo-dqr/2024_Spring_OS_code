@@ -114,6 +114,14 @@
  */
 #define LIST_INSERT_AFTER(listelm, elm, field)                                                     \
 	/* Exercise 2.2: Your code here. */  \
+	do {
+		LIST_NEXT((elm), field) = LIST_NEXT((listelm), field);    
+		if (LIST_NEXT((listelm), field) != NULL) {                            
+			LIST_NEXT((listelm), field)->field.le_prev = &LIST_NEXT((elm), field);
+		}
+		LIST_NEXT((listelm), field) = (elm);
+		(elm)->field.le_prev = &LIST_NEXT((listelm), field);
+	} while (0)
 
 /*
  * Insert the element "elm" *before* the element "listelm" which is
@@ -121,10 +129,14 @@
  * as above.
  */
 #define LIST_INSERT_BEFORE(listelm, elm, field)                                                    \
-	do {                                                                                       \
-		(elm)->field.le_prev = (listelm)->field.le_prev;                                   \
-		LIST_NEXT((elm), field) = (listelm);                                               \
-		*(listelm)->field.le_prev = (elm);                                                 \
+	do {                        
+		/*elm的指向前一个节点的指针=listelm的指向前一个节点的指针*/                                                               \
+		(elm)->field.le_prev = (listelm)->field.le_prev;         
+		/*elm的指向下一个节点的指针指向listelm*/                          \
+		LIST_NEXT((elm), field) = (listelm);  
+		/*listelm的上一个节点的指向下一个节点的指针指向elm*/                                             \
+		*(listelm)->field.le_prev = (elm);   
+		/*更新listelm指向上一个节点的指针为elm的next指针*/                                              \
 		(listelm)->field.le_prev = &LIST_NEXT((elm), field);                               \
 	} while (0)
 

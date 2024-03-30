@@ -9,7 +9,7 @@
 #define PAGE_SIZE 4096
 #define PTMAP PAGE_SIZE
 #define PDMAP (4 * 1024 * 1024) // bytes mapped by a page directory entry
-#define PGSHIFT 12
+#define PGSHIFT 12 // log2(PAGE_SIZE)
 #define PDSHIFT 22 // log2(PDMAP)
 #define PDX(va) ((((u_long)(va)) >> PDSHIFT) & 0x03FF)
 #define PTX(va) ((((u_long)(va)) >> PGSHIFT) & 0x03FF)
@@ -17,7 +17,9 @@
 #define PTE_FLAGS(pte) (((u_long)(pte)) & 0xFFF)
 
 // Page number field of an address
+// 物理地址得到的实页号
 #define PPN(pa) (((u_long)(pa)) >> PGSHIFT)
+// 虚拟地址得到的虚页号
 #define VPN(va) (((u_long)(va)) >> PGSHIFT)
 
 // Page Table/Directory Entry flags
