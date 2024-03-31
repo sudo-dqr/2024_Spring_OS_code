@@ -186,7 +186,7 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 
 	/* Step 1: Get the corresponding page directory entry. */
 	/* Exercise 2.6: Your code here. (1/3) */
-
+	pgdir_entryp = pgdir + PDX(va);// 页目录偏移量 PDX 
 	/* Step 2: If the corresponding page table is not existent (valid) then:
 	 *   * If parameter `create` is set, create one. Set the permission bits 'PTE_C_CACHEABLE |
 	 *     PTE_V' for this new page in the page directory. If failed to allocate a new page (out
@@ -194,10 +194,26 @@ static int pgdir_walk(Pde *pgdir, u_long va, int create, Pte **ppte) {
 	 *   * Otherwise, assign NULL to '*ppte' and return 0.
 	 */
 	/* Exercise 2.6: Your code here. (2/3) */
-
+	if (!(*pgdir_entryp & PTE_V)) { // 该页目录项中的有效位为0
+		if (create) {
+			int ret = page_alloc(&pp); // 创建新物理页，即该一级页表表项对应的二级页表页面 
+			if (ret != 0) { // 观察创建返回值
+				return ret; // -E_NO_MEM 分配失败返回错误码
+			} else {
+				pp->pp_ref = 1; // 为0时为空闲页面 
+				// pp是分配出的空闲物理页的页控制块，是原来空闲页面链表(page_free_list)的第一个元素 
+				// 修改页目录中表项的内容，每一个表项是一个32位整型，page2pa得到该页的物理地址(物理页号左移12位)，并设置权限 
+				*pgdir_entryp = page2pa(pp) | PTE_V | PTE_C_CACHEABLE;
+			}
+		} else {
+			*ppte = NULL;
+			return 0;
+		}
+	}
 	/* Step 3: Assign the kernel virtual address of the page table entry to '*ppte'. */
 	/* Exercise 2.6: Your code here. (3/3) */
-
+	// ppte对应的为虚拟地址 
+	*ppte = (Pte*)(KADDR(PTE_ADDR(*pgdir_entryp))) + PTX(va); // 页表偏移量 PTX 
 	return 0;
 }
 
@@ -217,12 +233,16 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 	Pte *pte;
 
 	/* Step 1: Get corresponding page table entry. */
+	//要将pp映射到va，首先检查va是否已经存在了映射
 	pgdir_walk(pgdir, va, 0, &pte);
 
 	if (pte && (*pte & PTE_V)) {
+		// 如果存在映射且有效 
 		if (pa2page(*pte) != pp) {
+			//如果当前的映射不是映射到pp，先移除当前映射，后续再映射到pp
 			page_remove(pgdir, asid, va);
 		} else {
+			// 如果当前已经映射到pp，则只需要更新权限位
 			tlb_invalidate(asid, va);
 			*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V;
 			return 0;
@@ -231,15 +251,19 @@ int page_insert(Pde *pgdir, u_int asid, struct Page *pp, u_long va, u_int perm) 
 
 	/* Step 2: Flush TLB with 'tlb_invalidate'. */
 	/* Exercise 2.7: Your code here. (1/3) */
-
+	tlb_invalidate(asid,va);
 	/* Step 3: Re-get or create the page table entry. */
 	/* If failed to create, return the error. */
 	/* Exercise 2.7: Your code here. (2/3) */
-
+	int ret = pgdir_walk(pgdir,va,1,&pte);
+	if (ret != 0) {
+		return -E_NO_MEM;
+	} 
 	/* Step 4: Insert the page to the page table entry with 'perm | PTE_C_CACHEABLE | PTE_V'
 	 * and increase its 'pp_ref'. */
 	/* Exercise 2.7: Your code here. (3/3) */
-
+	pp->pp_ref++;
+	*pte = page2pa(pp) | perm | PTE_C_CACHEABLE | PTE_V;
 	return 0;
 }
 

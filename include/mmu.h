@@ -11,10 +11,11 @@
 #define PDMAP (4 * 1024 * 1024) // bytes mapped by a page directory entry
 #define PGSHIFT 12 // log2(PAGE_SIZE)
 #define PDSHIFT 22 // log2(PDMAP)
-#define PDX(va) ((((u_long)(va)) >> PDSHIFT) & 0x03FF)
-#define PTX(va) ((((u_long)(va)) >> PGSHIFT) & 0x03FF)
-#define PTE_ADDR(pte) (((u_long)(pte)) & ~0xFFF)
-#define PTE_FLAGS(pte) (((u_long)(pte)) & 0xFFF)
+#define PDX(va) ((((u_long)(va)) >> PDSHIFT) & 0x03FF)  /*31-22位 对应一级页表 Page Dictionary*/
+#define PTX(va) ((((u_long)(va)) >> PGSHIFT) & 0x03FF)  /*21-12位 对应二级页表 Page Table*/
+//每一个表项是一个32位整型 u_long 划分为两个部分物理地址(ADDR)和标记位(FLAGS)
+#define PTE_ADDR(pte) (((u_long)(pte)) & ~0xFFF) /*作用为将低12位(标志位)清0，保留高20位物理地址*/
+#define PTE_FLAGS(pte) (((u_long)(pte)) & 0xFFF) /*作用为将高20位清0，得到标志位*/
 
 // Page number field of an address
 // 物理地址得到的实页号 physical page number
@@ -48,23 +49,29 @@
 
 // Global bit. When the G bit in a TLB entry is set, that TLB entry will match solely on the VPN
 // field, regardless of whether the TLB entry’s ASID field matches the value in EntryHi.
+// 全局位 TLB仅通过虚页号匹配页表项 而不匹配ASID (lab3)
 #define PTE_G (0x0001 << PTE_HARDFLAG_SHIFT)
 
 // Valid bit. If 0 any address matching this entry will cause a tlb miss exception (TLBL/TLBS).
+// 页表项的有效位 
 #define PTE_V (0x0002 << PTE_HARDFLAG_SHIFT)
 
 // Dirty bit, but really a write-enable bit. 1 to allow writes, 0 and any store using this
 // translation will cause a tlb mod exception (TLB Mod).
+// 页表项的可写位 可写位为1 允许对该页表项对应的物理页进行写操作
 #define PTE_D (0x0004 << PTE_HARDFLAG_SHIFT)
 
 // Cache Coherency Attributes bit.
+// 可缓存位 将物理页面配置为可缓存 
 #define PTE_C_CACHEABLE (0x0018 << PTE_HARDFLAG_SHIFT)
 #define PTE_C_UNCACHEABLE (0x0010 << PTE_HARDFLAG_SHIFT)
 
 // Copy On Write. Reserved for software, used by fork.
+// 写时复制位 (lab4)
 #define PTE_COW 0x0001
 
 // Shared memmory. Reserved for software, used by fork.
+// 共享页面位 (lab6)
 #define PTE_LIBRARY 0x0002
 
 // Memory segments (32-bit kernel mode addresses)
@@ -150,10 +157,10 @@
 
 extern u_long npage;
 
-typedef u_long Pde;
-typedef u_long Pte;
+typedef u_long Pde; /*page dictionary element*/
+typedef u_long Pte; /*page table element*/
 
-//translates form kernel virtual address to physical address
+//translates form kernel virtual address to physical address(kseg0)
 #define PADDR(kva)                                                                                 \
 	({                                                                                         \
 		u_long _a = (u_long)(kva);                                                         \
@@ -162,7 +169,7 @@ typedef u_long Pte;
 		_a - ULIM;  /*高位清0*/                                                                       \
 	})
 
-// translates from physical address to kernel virtual address
+// translates from physical address to kernel virtual address(kseg0)
 #define KADDR(pa)                                                                                  \
 	({                                                                                         \
 		u_long _ppn = PPN(pa);                                                             \

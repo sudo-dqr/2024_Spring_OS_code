@@ -22,7 +22,7 @@ struct Page {
 	u_short pp_ref;
 };
 
-/*给出Page的完整宏定义展开 体会其中的指针域field即为pp_link pp_link.le_next pp_link.le_prev*
+/*给出Page的完整宏定义展开 体会其中的指针域field即为pp_link pp_link.le_next pp_link.le_prev */
 /*
 	struct Page {
 		struct {
