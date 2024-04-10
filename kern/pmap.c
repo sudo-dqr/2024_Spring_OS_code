@@ -530,4 +530,106 @@ void page_check(void) {
 	page_free(pa2page(PADDR(boot_pgdir)));
 
 	printk("page_check() succeeded!\n");
+
+
+}
+
+#include<buddy.h>
+struct Page_list buddy_free_list[2];
+
+void buddy_init(void) {
+	LIST_INIT(&buddy_free_list[0]);
+	LIST_INIT(&buddy_free_list[1]);
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_REMOVE(pp, pp_link);
+	}
+	for (int i = BUDDY_PAGE_BASE; i < BUDDY_PAGE_END; i += 2 * PAGE_SIZE) {
+		struct Page *pp = pa2page(i);
+		LIST_INSERT_HEAD(&buddy_free_list[1], pp, pp_link);
+	}
+}
+
+int buddy_alloc(u_int size, struct Page **new) {
+	/* Your Code Here (1/2) */
+	u_int need_size = 1;
+	while (need_size < size) {
+		need_size = need_size * 2;
+	}
+	if (need_size <= PAGE_SIZE) {
+		if (LIST_EMPTY(&buddy_free_list[0])) {
+			if (LIST_EMPTY(&buddy_free_list[1])) {
+				return -E_NO_MEM;
+			} else {
+				*new = LIST_FIRST(&buddy_free_list[1]);
+				LIST_REMOVE(*new,pp_link);
+				u_long pa = page2pa(*new) + PAGE_SIZE;
+				struct Page *higher = (struct Page *)pa2page(pa);
+				LIST_INSERT_HEAD(&buddy_free_list[0],higher,pp_link);
+				return 1;
+			}
+		} else {
+			*new = LIST_FIRST(&buddy_free_list[0]);
+			LIST_REMOVE(*new,pp_link);
+			return 1;
+		}
+	} else {
+		if (LIST_EMPTY(&buddy_free_list[1])) {
+			return -E_NO_MEM;
+		} else {
+			*new = LIST_FIRST(&buddy_free_list[1]);
+			LIST_REMOVE(*new,pp_link);
+			return 2;
+		}
+	}
+}
+
+
+void buddy_free(struct Page *pp, int npp) {
+	/* Your Code Here (2/2) */
+	u_int free_size = 0;
+	struct Page * higher_buddy;
+	struct Page * lower_buddy;
+	struct Page * free_buddy = NULL;
+	if (npp == 1) {
+		free_size = PAGE_SIZE;
+	} else {
+		free_size = PAGE_SIZE * 2;
+	}
+	u_int pa = page2pa(pp);
+	u_int offset = pa - BUDDY_PAGE_BASE;
+	int flag = (offset / PAGE_SIZE) % 2;
+	int higherflag = (flag==1);
+	int lowerflag = (flag==0);
+	if (lowerflag) {
+		LIST_FOREACH(higher_buddy,&buddy_free_list[0],pp_link)
+		{
+			if (page2pa(higher_buddy) == pa + PAGE_SIZE) {
+				free_buddy = higher_buddy;
+			}
+		}
+ 
+	} else if (higherflag) {
+		LIST_FOREACH(lower_buddy,&buddy_free_list[0],pp_link)
+		{
+			if (page2pa(lower_buddy) == pa - PAGE_SIZE) {
+				free_buddy = lower_buddy;
+			}
+		}
+	}
+	if (free_size == PAGE_SIZE) {
+		if (free_buddy != NULL){
+			LIST_REMOVE(free_buddy,pp_link);
+			if (lowerflag) {
+				LIST_INSERT_HEAD(&buddy_free_list[1],pp,pp_link);
+			} else if (higherflag) {
+				LIST_INSERT_HEAD(&buddy_free_list[1],free_buddy,pp_link);
+			}
+		} else {
+			LIST_INSERT_HEAD(&buddy_free_list[0],pp,pp_link);
+		}
+	} else {
+		LIST_INSERT_HEAD(&buddy_free_list[1],pp,pp_link);
+	}
+
 }
