@@ -134,8 +134,6 @@ int page_alloc(struct Page **new) {
 	struct Page *pp;
 	/* Exercise 2.4: Your code here. (1/2) */
 	if (LIST_EMPTY(&page_free_list)) {
-		/*注：E_NO_MEM是error.h中定义出的error code，为什么加负号呢？我们通过右键查看他的reference可以发现如下的语句*/
-		/*assert(page_alloc(&pp) == -E_NO_MEM);*/
 		return -E_NO_MEM;
 	}
 	pp = LIST_FIRST(&page_free_list);
