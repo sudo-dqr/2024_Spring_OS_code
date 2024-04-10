@@ -80,6 +80,7 @@ void mips_init(u_int argc, char **argv, char **penv, u_int ram_low_size);
 void page_init(void);
 void *alloc(u_int n, u_int align, int clear);
 
+u_int page_filter(Pde *pgdir, u_int va_lower_limit, u_int va_upper_limit, u_int num);
 int page_alloc(struct Page **pp);
 void page_free(struct Page *pp);
 void page_decref(struct Page *pp);
