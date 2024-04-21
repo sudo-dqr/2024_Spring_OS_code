@@ -75,10 +75,7 @@ static void map_segment(Pde *pgdir, u_int asid, u_long pa, u_long va, u_int size
 		 *  Use 'pa2page' to get the 'struct Page *' of the physical address.
 		 */
 		/* Exercise 3.2: Your code here. */
-		page_insert(pgdir,asid,pa2page(pa + i),va + i,perm);
-		Pte *pte;
-		page_lookup(pgdir,va + i,&pte);
-		*pte = (pa + i) | perm | PTE_V;
+		page_insert(pgdir,asid,pa2page(pa + i),va + i,perm | PTE_V);
 	}
 }
 
@@ -155,7 +152,7 @@ void env_init(void) {
 	 * list should be the same as they are in the 'envs' array. */
 
 	/* Exercise 3.1: Your code here. (2/2) */
-	for (int i = NENV - 1; i >= 0;i--) {
+	for (i = NENV - 1; i >= 0;i--) {
 		envs[i].env_status = ENV_FREE;
 		LIST_INSERT_HEAD(&env_free_list,&envs[i],env_link);
 	}
