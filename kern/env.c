@@ -157,6 +157,7 @@ void env_init(void) {
 		envs[i].env_status = ENV_FREE;
 		LIST_INSERT_HEAD(&env_free_list,&envs[i],env_link);
 	}
+
 	/*
 	 * We want to map 'UPAGES' and 'UENVS' to *every* user space with PTE_G permission (without
 	 * PTE_D), then user programs can read (but cannot write) kernel data structures 'pages' and
@@ -261,9 +262,9 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	 * transitions to user mode.
 	 */
 	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
+	e->env_tf.cp0_count = 0;
 	// Reserve space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
-
 	/* Step 5: Remove the new Env from env_free_list. */
 	/* Exercise 3.4: Your code here. (4/4) */
 	LIST_REMOVE(e,env_link);
@@ -458,7 +459,7 @@ void env_run(struct Env *e) {
 	 *   'curenv->env_tf' first.
 	 */
 	if (curenv) {
-		curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);
+		curenv->env_tf = *((struct Trapframe *)KSTACKTOP - 1);	
 	}
 
 	/* Step 2: Change 'curenv' to 'e'. */
@@ -570,6 +571,5 @@ void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *cloc
 	*pri = e->env_pri;
 	*scheds = e->env_scheds;
 	*runs = e->env_runs;
-	struct Trapframe* p = ((struct Trapframe*)KSTACKTOP - 1);
-	*clocks = p->cp0_count;	
+	*clocks = e->env_tf.cp0_count;	
 }

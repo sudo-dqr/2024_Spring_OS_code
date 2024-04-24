@@ -70,8 +70,6 @@
 .macro RESTORE_ALL
 .set noreorder
 .set noat
-	lw	v0, TF_COUNT(sp)
-	mtc0	v0, CP0_COUNT	
 	lw      v0, TF_STATUS(sp)
 	mtc0    v0, CP0_STATUS
 	lw      v1, TF_LO(sp)
