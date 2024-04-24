@@ -18,6 +18,8 @@
 1:
 	subu    sp, sp, TF_SIZE
 	sw      k0, TF_REG29(sp)
+	mfc0	k0, CP0_COUNT
+	sw	k0, TF_COUNT(sp)
 	mfc0    k0, CP0_STATUS
 	sw      k0, TF_STATUS(sp)
 	mfc0    k0, CP0_CAUSE
@@ -68,6 +70,8 @@
 .macro RESTORE_ALL
 .set noreorder
 .set noat
+	lw	v0, TF_COUNT(sp)
+	mtc0	v0, CP0_COUNT	
 	lw      v0, TF_STATUS(sp)
 	mtc0    v0, CP0_STATUS
 	lw      v1, TF_LO(sp)
