@@ -262,7 +262,6 @@ int env_alloc(struct Env **new, u_int parent_id) {
 	 * transitions to user mode.
 	 */
 	e->env_tf.cp0_status = STATUS_IM7 | STATUS_IE | STATUS_EXL | STATUS_UM;
-	e->env_tf.cp0_count = 0;
 	// Reserve space for 'argc' and 'argv'.
 	e->env_tf.regs[29] = USTACKTOP - sizeof(int) - sizeof(char **);
 	/* Step 5: Remove the new Env from env_free_list. */
@@ -571,5 +570,5 @@ void env_stat(struct Env *e, u_int *pri, u_int *scheds, u_int *runs, u_int *cloc
 	*pri = e->env_pri;
 	*scheds = e->env_scheds;
 	*runs = e->env_runs;
-	*clocks = e->env_tf.cp0_count;	
+	*clocks += e->env_tf.cp0_count;	
 }
