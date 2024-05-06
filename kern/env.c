@@ -115,7 +115,11 @@ int envid2env(u_int envid, struct Env **penv, int checkperm) {
 	 *   You may want to use 'ENVX'.
 	 */
 	/* Exercise 4.3: Your code here. (1/2) */
-
+	if (envid == 0) {
+		*penv = curenv;
+		return 0;
+	}
+	e = &envs[ENVX(envid)];
 	if (e->env_status == ENV_FREE || e->env_id != envid) {
 		return -E_BAD_ENV;
 	}
@@ -123,11 +127,14 @@ int envid2env(u_int envid, struct Env **penv, int checkperm) {
 	/* Step 2: Check when 'checkperm' is non-zero. */
 	/* Hints:
 	 *   Check whether the calling env has sufficient permissions to manipulate the
-	 *   specified env, i.e. 'e' is either 'curenv' or its immediate child.
+	 *   specified env, 
+	 *   i.e. 'e' is either 'curenv' or its immediate child. i.e.means in other words
 	 *   If violated, return '-E_BAD_ENV'.
 	 */
 	/* Exercise 4.3: Your code here. (2/2) */
-
+	if (checkperm && (e->env_id != curenv->env_id) && (e->env_parent_id != curenv->env_id)) {
+		return -E_BAD_ENV;
+	}
 	/* Step 3: Assign 'e' to '*penv'. */
 	*penv = e;
 	return 0;
