@@ -30,18 +30,18 @@ static void __attribute__((noreturn)) cow_entry(struct Trapframe *tf) {
 	perm = (perm & !PTE_COW) | PTE_D;
 	/* Step 3: Allocate a new page at 'UCOW'. */
 	/* Exercise 4.13: Your code here. (3/6) */
-	try(syscall_mem_alloc(0,UCOW,PTE_D));
+	syscall_mem_alloc(0,(void*)UCOW,PTE_D);
 	/* Step 4: Copy the content of the faulting page at 'va' to 'UCOW'. */
 	/* Hint: 'va' may not be aligned to a page! */
 	/* Exercise 4.13: Your code here. (4/6) */
 	va = ROUNDDOWN(va,PAGE_SIZE);
-	memcpy(UCOW,va,PAGE_SIZE);
+	memcpy((void*)UCOW,(const void*)va,PAGE_SIZE);
 	// Step 5: Map the page at 'UCOW' to 'va' with the new 'perm'.
 	/* Exercise 4.13: Your code here. (5/6) */
-	syscall_mem_map(0,UCOW,0,va,perm);
+	syscall_mem_map(0,(void*)UCOW,0,(void*)va,perm);
 	// Step 6: Unmap the page at 'UCOW'.
 	/* Exercise 4.13: Your code here. (6/6) */
-	syscall_mem_unmap(0,UCOW);
+	syscall_mem_unmap(0,(void*)UCOW);
 	// Step 7: Return to the faulting routine.
 	int r = syscall_set_trapframe(0, tf);
 	user_panic("syscall_set_trapframe returned %d", r);
@@ -84,11 +84,11 @@ static void duppage(u_int envid, u_int vpn) {
 	/* Exercise 4.10: Your code here. (2/2) */
 	addr = vpn * PAGE_SIZE;
 	if (!(perm & PTE_D) || (perm & PTE_LIBRARY)) { //实际上包含了 perm & PTE_COW的情况 因为若该页面为写时复制权限，说明已经被fork过一次，即PTE_D=0 & PTE_COW = 1
-		syscall_mem_map(0,addr,envid,addr,perm);//源进程 源地址 新进程 新地址 
+		syscall_mem_map(0,(void*)addr,envid,(void*)addr,perm);//源进程 源地址 新进程 新地址 
 	} else {
 		perm = (perm & ! PTE_D) | PTE_COW;
-		syscall_mem_map(0,addr,envid,addr,perm); // first mapped to the child
-		syscall_mem_map(0,addr,0,addr,perm);
+		syscall_mem_map(0,(void*)addr,envid,(void*)addr,perm); // first mapped to the child
+		syscall_mem_map(0,(void*)addr,0,(void*)addr,perm);
 	}
 }
 
@@ -125,10 +125,10 @@ int fork(void) {
 	// Hint: You should use 'duppage'.
 	/* Exercise 4.15: Your code here. (1/2) */
 	for (i = 0;i < PDX(ROUND(USTACKTOP,PDMAP));i++) {
-		if (vpd[i] & PTE_D) {
+		if (vpd[i] & PTE_V) {
 			for (u_int j = 0;j < 1024;j++) {
 				u_int vpn = (i << 10) | j;
-				if ((vpn < VPN(KSTACKTOP) && (vpt[vpn] & PTE_V))) {
+				if ((vpn < VPN(USTACKTOP) && (vpt[vpn] & PTE_V))) {
 					duppage(child,vpn);
 				}
 			}
