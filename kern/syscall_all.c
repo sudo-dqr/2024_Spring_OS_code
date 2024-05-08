@@ -508,7 +508,7 @@ int sys_msg_send(u_int envid, u_int value, u_int srcva, u_int perm) {
 	p = page_lookup(curenv->env_pgdir,srcva,NULL);
 	p->pp_ref++;
 	m->msg_page = p;
-	TAILQ_INSERT_TAIL(&(e->env_msg_list),e,msg_link);
+	TAILQ_INSERT_TAIL(&(e->env_msg_list),m,msg_link);
 	return 0;
 }
 
