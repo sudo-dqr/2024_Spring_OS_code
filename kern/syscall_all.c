@@ -532,7 +532,7 @@ int sys_msg_recv(u_int dstva) {
 		}
 		page_decref(m->msg_page);
 	}
-	curenv->env_msg_value = m->value;
+	curenv->env_msg_value = m->msg_value;
 	curenv->env_msg_from = m->msg_from;
 	curenv->env_msg_perm = m->msg_perm;
 	m->msg_status = MSG_RECV;
