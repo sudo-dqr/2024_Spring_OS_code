@@ -83,9 +83,11 @@ static void duppage(u_int envid, u_int vpn) {
 	 */
 	/* Exercise 4.10: Your code here. (2/2) */
 	addr = vpn * PAGE_SIZE;
-	if (!(perm & PTE_D) || (perm & PTE_LIBRARY)) { //实际上包含了 perm & PTE_COW的情况 因为若该页面为写时复制权限，说明已经被fork过一次，即PTE_D=0 & PTE_COW = 1
+	if (!(perm & PTE_D) || (perm & PTE_LIBRARY)) { 
+		// 实际上包含了 perm & PTE_COW的情况 因为若该页面为写时复制权限，说明已经被fork过一次，即PTE_D=0 & PTE_COW = 1
+		// 对于只读页面（例如代码）、共享页面、已经被fork过的可写页面，只需从父进程向子进程传递映射关系以及对应的**权限位**
 		syscall_mem_map(0,(void*)addr,envid,(void*)addr,perm);//源进程 源地址 新进程 新地址 
-	} else {
+	} else { // 可写页面(PTE_D) 需要修改权限位并分别映射到父子进程 
 		perm = (perm & ! PTE_D) | PTE_COW;
 		syscall_mem_map(0,(void*)addr,envid,(void*)addr,perm); // first mapped to the child
 		syscall_mem_map(0,(void*)addr,0,(void*)addr,perm);
