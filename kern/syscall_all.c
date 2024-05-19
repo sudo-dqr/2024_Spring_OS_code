@@ -5,6 +5,7 @@
 #include <printk.h>
 #include <sched.h>
 #include <syscall.h>
+#include <malta.h>
 
 extern struct Env *curenv;
 
@@ -459,7 +460,21 @@ int sys_cgetc(void) {
  */
 int sys_write_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (1/2) */
-
+	if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	} 
+	if (!((pa >= MALTA_IDE_BASE && pa + len < MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len < MALTA_SERIAL_BASE + 0x20))) {
+		return -E_INVAL;
+	}
+	if (len == 1) {
+		iowrite8(*(uint8_t *)va,(u_long)pa);
+	} else if (len == 2) {
+		iowrite16(*(uint16_t *)va,(u_long)pa);
+	} else if (len == 4) {
+		iowrite32(*(uint32_t *)va,(u_long)pa);
+	} else {
+		return -E_INVAL;
+	}
 	return 0;
 }
 
@@ -480,7 +495,21 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
-
+		if (is_illegal_va_range(va, len)) {
+		return -E_INVAL;
+	} 
+	if (!((pa >= MALTA_IDE_BASE && pa + len < MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len < MALTA_SERIAL_BASE + 0x20))) {
+		return -E_INVAL;
+	}
+	if (len == 1) {
+		*(uint8_t *) va = ioread8((u_long)pa);
+	} else if (len == 2) {
+		*(uint16_t *) va = ioread16((u_long)pa);
+	} else if (len == 4) {
+		*(uint32_t *) va = ((u_long)pa);
+	} else {
+		return -E_INVAL;
+	}
 	return 0;
 }
 
