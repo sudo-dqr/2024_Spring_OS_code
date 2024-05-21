@@ -463,7 +463,7 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
 	if (is_illegal_va_range(va, len)) {
 		return -E_INVAL;
 	} 
-	if (!((pa >= MALTA_IDE_BASE && pa + len < MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len < MALTA_SERIAL_BASE + 0x20))) {
+	if (!((pa >= MALTA_IDE_BASE && pa + len <= MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len <= MALTA_SERIAL_BASE + 0x20))) {
 		return -E_INVAL;
 	}
 	if (len == 1) {
@@ -495,10 +495,10 @@ int sys_write_dev(u_int va, u_int pa, u_int len) {
  */
 int sys_read_dev(u_int va, u_int pa, u_int len) {
 	/* Exercise 5.1: Your code here. (2/2) */
-		if (is_illegal_va_range(va, len)) {
+	if (is_illegal_va_range(va, len)) {
 		return -E_INVAL;
 	} 
-	if (!((pa >= MALTA_IDE_BASE && pa + len < MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len < MALTA_SERIAL_BASE + 0x20))) {
+	if (!((pa >= MALTA_IDE_BASE && pa + len <= MALTA_IDE_BASE + 0x8) || (pa >= MALTA_SERIAL_BASE && pa + len <= MALTA_SERIAL_BASE + 0x20))) {
 		return -E_INVAL;
 	}
 	if (len == 1) {
