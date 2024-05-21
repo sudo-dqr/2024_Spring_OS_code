@@ -138,7 +138,7 @@ int map_block(u_int blockno) {
 	// Step 1: If the block is already mapped in cache, return 0.
 	// Hint: Use 'block_is_mapped'.
 	/* Exercise 5.7: Your code here. (1/5) */
-	if (block_is_mapped(blockno)) {
+	if (block_is_mapped(blockno) != NULL) {
 		return 0;
 	}
 	// Step 2: Alloc a page in permission 'PTE_D' via syscall.
@@ -154,6 +154,9 @@ void unmap_block(u_int blockno) {
 	void *va;
 	/* Exercise 5.7: Your code here. (3/5) */
 	va = block_is_mapped(blockno);
+	if (va == NULL) {
+		return;
+	}
 	// Step 2: If this block is used (not free) and dirty in cache, write it back to the disk
 	// first.
 	// Hint: Use 'block_is_free', 'block_is_dirty' to check, and 'write_block' to sync.
