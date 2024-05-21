@@ -506,7 +506,7 @@ int sys_read_dev(u_int va, u_int pa, u_int len) {
 	} else if (len == 2) {
 		*(uint16_t *) va = ioread16((u_long)pa);
 	} else if (len == 4) {
-		*(uint32_t *) va = ((u_long)pa);
+		*(uint32_t *) va = ioread32((u_long)pa);
 	} else {
 		return -E_INVAL;
 	}
