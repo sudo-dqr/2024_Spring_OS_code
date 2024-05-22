@@ -198,6 +198,7 @@ static int env_setup_vm(struct Env *e) {
 	/* Exercise 3.3: Your code here. */
 	p->pp_ref++;
 	e->env_pgdir = (Pde*)page2kva(p);
+
 	/* Step 2: Copy the template page directory 'base_pgdir' to 'e->env_pgdir'. */
 	/* Hint:
 	 *   As a result, the address space of all envs is identical in [UTOP, UVPT).
@@ -485,6 +486,14 @@ void env_run(struct Env *e) {
 	/* Exercise 3.8: Your code here. (2/2) */
 	env_pop_tf(&(curenv->env_tf),curenv->env_asid);
 }
+
+int syscall_clone(void * func, void * child_stack) {
+
+
+
+}
+
+
 
 void env_check() {
 	struct Env *pe, *pe0, *pe1, *pe2;
