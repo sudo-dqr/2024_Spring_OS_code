@@ -119,6 +119,16 @@ int remove(const char *path);
 int ftruncate(int fd, u_int size);
 int sync(void);
 
+
+extern volatile int straced;
+#define STRACE_MAX_RECV 1024
+extern int strace_recv_sysno[STRACE_MAX_RECV], strace_recv_child[STRACE_MAX_RECV];
+extern int strace_recv_cnt;
+void recv_sysno(u_int child, int sysno);
+
+void strace_send(int sysno);
+void strace_recv();
+
 #define user_assert(x)                                                                             \
 	do {                                                                                       \
 		if (!(x))                                                                          \
