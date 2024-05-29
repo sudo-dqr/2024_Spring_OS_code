@@ -857,12 +857,12 @@ int copy_directory_contents(struct File *src, struct File *dst) {
          // Step3: Invoke either 'copy_directory_contents' or 'copy_file_content',
          // depending on the value of 'f_type'.
          // Lab 5-2-Exam: Your code here. (5/6)
-	if (dir_content[j].f_type == FTYPE_REG) {
-		if ((r = copy_file_content(dir_content, dst_file)) < 0) {
+	if (dst_file->f_type == FTYPE_REG) {
+		if ((r = copy_file_content(&dir_content[j], dst_file)) < 0) {
 			return r;
 		}
 	} else {
-		if ((r = copy_directory_contents(dir_content, dst_file)) < 0) {
+		if ((r = copy_directory_contents(&dir_content[j], dst_file)) < 0) {
 			return r;
 		}
 	}
