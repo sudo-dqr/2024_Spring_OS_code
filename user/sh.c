@@ -91,9 +91,15 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (1/3) */
-
-			user_panic("< redirection not implemented");
-
+			if ((fd = open(t, O_RDONLY)) < 0) {
+				debugf("failed to open %s\n");
+				exit();
+			}
+			if ((r = dup(fd, 0)) < 0) {
+				debugf("failed to duplicate file to <stdin>\n");
+				exit();
+			}
+			close(fd);
 			break;
 		case '>':
 			if (gettoken(0, &t) != 'w') {
@@ -106,9 +112,15 @@ int parsecmd(char **argv, int *rightpipe) {
 			// utilize 'debugf' to print relevant messages,
 			// and subsequently terminate the process using 'exit'.
 			/* Exercise 6.5: Your code here. (2/3) */
-
-			user_panic("> redirection not implemented");
-
+			if ((fd = open(t, O_WRONLY)) < 0) {
+				debugf("failed to open %s\n");
+				exit();
+			}
+			if ((r = dup(fd, 1)) < 0) {
+				debugf("failed to duplicate file to <stdout>\n");
+				exit();
+			}
+			close(fd);
 			break;
 		case '|':;
 			/*
@@ -128,9 +140,21 @@ int parsecmd(char **argv, int *rightpipe) {
 			 */
 			int p[2];
 			/* Exercise 6.5: Your code here. (3/3) */
-
-			user_panic("| not implemented");
-
+			if ((r = pipe(p)) < 0) {
+				debugf("failed to create pipe\n");
+				exit();
+			}
+			if ((*rightpipe = fork()) == 0) {
+				dup(p[0], 0);
+				close(p[0]);
+				close(p[1]);
+				return parsecmd(argv, rightpipe);
+			} else {
+				dup(p[1], 1);
+				close(p[1]);
+				close(p[0]);
+				return argc;
+			}
 			break;
 		}
 	}
